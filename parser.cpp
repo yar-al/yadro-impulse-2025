@@ -5,6 +5,7 @@
 
 namespace clubcontrol{
     int Parser::time_to_int(const std::string& time_str) {
+        if(time_str.size() != 5 || time_str[2] != ':') return -1;
         int hours, minutes;
         char colon;
         std::istringstream iss(time_str);
@@ -73,6 +74,7 @@ namespace clubcontrol{
         if (price_per_hour <= 0) throw InputException(line);
 
         // Parse events
+        int prev_event_time = -1;
         while (std::getline(file, line)) {
             std::istringstream event_iss(line);
             std::string time_str, id_str;
@@ -87,6 +89,8 @@ namespace clubcontrol{
                 throw InputException(line);
             }
             if (time == -1) throw InputException(line);
+            if(time < prev_event_time) throw InputException(line);
+
             std::vector<std::string> args;
             std::string arg;
             while (event_iss >> arg) {
@@ -98,12 +102,15 @@ namespace clubcontrol{
             }
             if (args.size() > 1) {
                 try {
-                    opttable = std::stoi(args[1]) - 1;
+                    opttable = std::stoi(args[1]);
                 } catch(...) {
                     throw InputException(line);
                 }
+                if(opttable < 1 || opttable > num_tables) throw InputException(line); 
+                opttable--;
             }
             input_events.emplace_back(time, id, args[0], opttable);
+            prev_event_time = time;
         }
         club_args.push_back(num_tables);
         club_args.push_back(opening_time);
