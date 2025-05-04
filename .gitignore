@@ -1,0 +1,39 @@
+# Ignore VSCode workspace settings
+.vscode/
+
+# Compiled object files
+*.o
+*.ko
+*.obj
+*.lo
+
+# Precompiled headers
+*.gch
+*.pch
+
+# Dependency files
+*.d
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.bin
+
+# Debug files
+*.ilk
+*.pdb
+
+# Temporary files
+*.swp
+*.swo
+*~
+*.tmp
+
+# Build directories
+build/
+dist/
