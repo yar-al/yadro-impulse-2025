@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS := -Wall -Wextra
+CXXFLAGS := #-Wall -Wextra
 
 SRC_DIR := .
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
