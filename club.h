@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
 #include <iostream>
 
 namespace clubcontrol{
@@ -24,7 +24,7 @@ namespace clubcontrol{
         int id;
         std::string opttext;
         int opttable;
-        Event(int event_time, int event_id, std::string event_text, int event_table = 0) :
+        Event(int event_time, int event_id, std::string event_text, int event_table = -1) :
         time(event_time), id(event_id), opttext(event_text), opttable(event_table) {};
     };
 
@@ -58,6 +58,7 @@ namespace clubcontrol{
         int price;
         std::vector<Table> tables;
         ClientQueue waiting_queue;
+        std::unordered_set<std::string> unserved_clients;
         void change_state(Event e);
         std::vector<Event> events;
         bool is_client_here(std::string client_name);

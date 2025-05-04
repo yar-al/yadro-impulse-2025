@@ -17,15 +17,22 @@ namespace clubcontrol{
                     events.emplace_back(e.time, 13, "YouShallNotPass");
                     return;
                 }
+                unserved_clients.insert(e.opttext);
             break;
             case 2:
                 if (tables[e.opttable].is_occupied) {
                     events.emplace_back(e.time, 13, "PlaceIsBusy");
                     return;
                 }
-                if (is_client_here(e.opttext)) {
+                if (!is_client_here(e.opttext)) {
                     events.emplace_back(e.time, 13, "ClientUnknown");
                     return;
+                }
+                unserved_clients.erase(e.opttext);
+                table_idx = find_client(e.opttext);
+                if (table_idx > -1 && table_idx < tables.size()) {
+                    tables[table_idx].is_occupied = false;
+                    recalculate_table(table_idx, e.time);
                 }
                 tables[e.opttable].is_occupied = true;
                 tables[e.opttable].start_time = e.time;
@@ -42,8 +49,9 @@ namespace clubcontrol{
                 }
             break;
             case 4:
-                table_idx = find_client(e.opttext);
+                table_idx = find_client(e.opttext);   
                 if(table_idx < 0) {
+                    if(unserved_clients.erase(e.opttext)) return;
                     events.emplace_back(e.time, 13, "ClientUnknown");
                     return;
                 }
@@ -63,12 +71,15 @@ namespace clubcontrol{
                 waiting_queue.pop();
             break;
             default:
+                events.emplace_back(e.time, 13, "UnknownID");
             break;
         }
     }
     
     bool Club::is_client_here(std::string client_name)
     {
+        auto it = unserved_clients.find(client_name);
+        if(it != unserved_clients.end()) return true;
         for (const auto& i : tables) {
             if (i.current_client == client_name) {
                 return true;
@@ -132,7 +143,9 @@ namespace clubcontrol{
             last_clients.insert(waiting_queue.first());
             waiting_queue.pop();
         }
-
+        for(auto i : unserved_clients){
+            last_clients.insert(i);
+        }
         for(const auto &i : last_clients){
             events.emplace_back(closing_time, 11, i);
         }
