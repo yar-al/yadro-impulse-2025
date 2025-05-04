@@ -4,7 +4,7 @@ CXXFLAGS := -Wall -Wextra
 SRC_DIR := .
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
-EXECUTABLE := app
+EXECUTABLE := app.out
 
 all: $(EXECUTABLE)
 
