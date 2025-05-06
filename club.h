@@ -77,7 +77,8 @@ namespace clubcontrol{
         std::optional<Event> handle_event(Event e);
         std::vector<Event> close_club();
         int get_opening_time() const { return opening_time; }
-        int get_closing_time() const { return closing_time; };
+        int get_closing_time() const { return closing_time; }
+        const std::vector<Table>& get_tables() const { return tables; }
         void handle_day_and_report(const std::vector<Event>&events);
     };
 
@@ -88,8 +89,8 @@ namespace clubcontrol{
         static int time_to_int(const std::string& time_str);
         static std::string int_to_time(int minutes);
         static void parse_file(std::string filename, std::vector<Event>& input_events, std::vector<int>& club_args);
-        static void output_events(std::vector<Event> events) {
-            for(auto &e : events){
+        static void output_events(const std::vector<Event>& events) {
+            for(const auto &e : events){
                 std::cout << describe_event(e) << "\n";
             }
         }
