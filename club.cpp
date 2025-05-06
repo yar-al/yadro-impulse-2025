@@ -56,10 +56,10 @@ namespace clubcontrol{
                 }
                 tables[table_idx].is_occupied = false;
                 recalculate_table(table_idx, e.time);
-                if(waiting_queue.is_empty()) {
+                if(waiting_queue.empty()) {
                     return {};
                 }
-                client_name = waiting_queue.first();
+                client_name = waiting_queue.front();
                 tables[table_idx].is_occupied = true;
                 tables[table_idx].current_client = client_name;
                 tables[table_idx].start_time = e.time;
@@ -137,8 +137,8 @@ namespace clubcontrol{
             tables[i].is_occupied = false;
             last_clients.insert(tables[i].current_client);
         }
-        while(!waiting_queue.is_empty()){
-            last_clients.insert(waiting_queue.first());
+        while(!waiting_queue.empty()){
+            last_clients.insert(waiting_queue.front());
             waiting_queue.pop();
         }
         for(auto i : unserved_clients){

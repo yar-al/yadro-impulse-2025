@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <iostream>
 #include <optional>
+#include <deque>
 
 namespace clubcontrol{
     
@@ -31,23 +32,27 @@ namespace clubcontrol{
 
     class ClientQueue
     {
-        std::vector<std::string> data;
-        int front;
-        int back;
-        int current_size;
+        std::deque<std::string> data;
+        int max_size;
         public:
-        ClientQueue(int size) : data(size), front(0), back(0), current_size(0) {};
-        bool is_empty();
-        bool push(std::string);
-        bool pop();
-        bool is_client_here(const std::string& client_name);
-        std::string first();
-        void remove_client(std::string);
+        ClientQueue(int size) : data(), max_size(size) {};
+        bool empty() { return data.empty(); }
+        bool push(std::string client) {
+            if(data.size() == max_size) return false;
+            data.push_back(client);
+            return true;
+        }
+        void pop() { data.pop_front(); }
+        bool is_client_here(const std::string& client_name) {
+            return std::find(data.begin(), data.end(), client_name) != data.end();
+        }
+        std::string front() { return data.front(); }
+        void remove_client(std::string client_name) {
+            data.erase(std::remove(data.begin(), data.end(), client_name), data.end());
+        }
         void print_queue(){
-            std::cout << current_size << " ";
-            for(int i = front; i != back; i = (i + 1) % data.size()){
-                std::cout << data[i] << " ";
-            }
+            std::cout << data.size() << " ";
+            for(const auto &i : data) std::cout << i << " ";
         }
     };
 
