@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_set>
 #include <iostream>
+#include <optional>
 
 namespace clubcontrol{
     
@@ -59,23 +60,20 @@ namespace clubcontrol{
         std::vector<Table> tables;
         ClientQueue waiting_queue;
         std::unordered_set<std::string> unserved_clients;
-        void change_state(Event e);
-        std::vector<Event> events;
         bool is_client_here(std::string client_name);
         int find_client(std::string client_name);
         int get_free_table();
-        void output_revenue();
         void recalculate_table(int table_number, int current_time);
         void print_debug_info();
+        void print_table_info();
         public:
         Club(int table_count, int o_time, int c_time, int hour_price) : 
             opening_time(o_time), closing_time(c_time), price(hour_price), waiting_queue(table_count), tables(table_count) {};
-        void handle_event(Event e) {
-            events.push_back(e);
-            change_state(e);
-        }
-        void close_club();
-        void full_output();
+        std::optional<Event> handle_event(Event e);
+        std::vector<Event> close_club();
+        int get_opening_time() const { return opening_time; }
+        int get_closing_time() const { return closing_time; };
+        void handle_day_and_report(const std::vector<Event>&events);
     };
 
     class Parser

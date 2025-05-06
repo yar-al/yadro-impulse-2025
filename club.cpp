@@ -2,31 +2,28 @@
 #include <set>
 
 namespace clubcontrol{
-    void Club::change_state(Event e)
+    std::optional<Event> Club::handle_event(Event e)
     {
         int table_idx;
+        std::string client_name;
         //std::cout << "Handling event \"" << Parser::describe_event(e) << "\" " << "Current time: " << e.time << std::endl; 
         //print_debug_info();
         switch(e.id) {
             case 1:
                 if (e.time < opening_time || e.time > closing_time) {
-                    events.emplace_back(e.time, 13, "NotOpenYet");
-                    return;
+                    return Event(e.time, 13, "NotOpenYet");
                 }
                 if (is_client_here(e.opttext)) {
-                    events.emplace_back(e.time, 13, "YouShallNotPass");
-                    return;
+                    return Event(e.time, 13, "YouShallNotPass");
                 }
                 unserved_clients.insert(e.opttext);
             break;
             case 2:
                 if (tables[e.opttable].is_occupied) {
-                    events.emplace_back(e.time, 13, "PlaceIsBusy");
-                    return;
+                    return Event(e.time, 13, "PlaceIsBusy");
                 }
                 if (!is_client_here(e.opttext)) {
-                    events.emplace_back(e.time, 13, "ClientUnknown");
-                    return;
+                    return Event(e.time, 13, "ClientUnknown");
                 }
                 unserved_clients.erase(e.opttext);
                 table_idx = find_client(e.opttext);
@@ -40,40 +37,40 @@ namespace clubcontrol{
             break;
             case 3:
                 if(get_free_table() > -1) {
-                    events.emplace_back(e.time, 13, "ICanWaitNoLonger!");
-                    return;
+                    return Event(e.time, 13, "ICanWaitNoLonger!");
                 }
+                unserved_clients.erase(e.opttext);
                 if(!waiting_queue.push(e.opttext)) {
-                    events.emplace_back(e.time, 11, e.opttext);
-                    return;
+                    return Event(e.time, 11, e.opttext);
                 }
             break;
             case 4:
                 table_idx = find_client(e.opttext);   
                 if(table_idx < 0) {
-                    if(unserved_clients.erase(e.opttext)) return;
-                    events.emplace_back(e.time, 13, "ClientUnknown");
-                    return;
+                    if(unserved_clients.erase(e.opttext)) return {};
+                    return Event(e.time, 13, "ClientUnknown");
                 }
                 if(table_idx == tables.size()){
                     waiting_queue.remove_client(e.opttext);
-                    return;
+                    return {};
                 }
                 tables[table_idx].is_occupied = false;
                 recalculate_table(table_idx, e.time);
                 if(waiting_queue.is_empty()) {
-                    return;
+                    return {};
                 }
-                events.emplace_back(e.time, 12, waiting_queue.first(), table_idx);
+                client_name = waiting_queue.first();
                 tables[table_idx].is_occupied = true;
-                tables[table_idx].current_client = waiting_queue.first();
+                tables[table_idx].current_client = client_name;
                 tables[table_idx].start_time = e.time;
                 waiting_queue.pop();
+                return Event(e.time, 12, client_name, table_idx);
             break;
             default:
-                events.emplace_back(e.time, 13, "UnknownID");
+                return Event(e.time, 13, "UnknownID");
             break;
         }
+        return {};
     }
     
     bool Club::is_client_here(std::string client_name)
@@ -107,12 +104,6 @@ namespace clubcontrol{
         }
         return -1;
     }
-    void Club::output_revenue()
-    {
-        for(int i = 0; i < tables.size(); i++) {
-            std::cout << i << " " << tables[i].revenue << " " << Parser::int_to_time(tables[i].total_time) << "\n"; 
-        }
-    }
     void Club::recalculate_table(int table_number, int current_time)
     {
         int delta_time = current_time - tables[table_number].start_time;
@@ -130,8 +121,15 @@ namespace clubcontrol{
             << " " << tables[i].total_time << std::endl;
         }
     }
-    void Club::close_club()
+    void Club::print_table_info()
     {
+        for(int i = 0; i < tables.size(); i++){
+            std::cout << i+1 << " " << tables[i].revenue << " " << Parser::int_to_time(tables[i].total_time) << "\n";
+        }
+    }
+    std::vector<Event> Club::close_club()
+    {
+        std::vector<Event> events;
         std::set<std::string> last_clients;
         for(int i = 0; i < tables.size(); i++){
             if(!tables[i].is_occupied) continue;
@@ -149,12 +147,20 @@ namespace clubcontrol{
         for(const auto &i : last_clients){
             events.emplace_back(closing_time, 11, i);
         }
+        return events;
     }
-    void Club::full_output()
+    void Club::handle_day_and_report(const std::vector<Event> &events)
     {
         std::cout << Parser::int_to_time(opening_time) << "\n";
-        Parser::output_events(events);
+        for(auto e : events){
+            std::cout << Parser::describe_event(e) << "\n";
+            auto generated_event = handle_event(e);
+            if(generated_event) std::cout << Parser::describe_event(*generated_event) << "\n";
+        }
+        for(auto e : close_club()) {
+            std::cout << Parser::describe_event(e) << "\n";
+        }
         std::cout << Parser::int_to_time(closing_time) << "\n";
-        output_revenue();
+        print_table_info();
     }
 }

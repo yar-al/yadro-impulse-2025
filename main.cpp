@@ -17,9 +17,5 @@ int main(int argc, char* argv[]) {
     //Parser::output_events(incoming_events);
 
     auto club = Club(club_args[0],club_args[1],club_args[2],club_args[3]);
-    for(const auto&i : incoming_events) {
-        club.handle_event(i);        
-    }
-    club.close_club();
-    club.full_output();
+    club.handle_day_and_report(incoming_events);
 }
