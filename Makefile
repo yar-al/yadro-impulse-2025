@@ -1,7 +1,7 @@
 CXX := g++
 CXXFLAGS := -std=c++20 #-Wall -Wextra
 
-SRC_DIR := .
+SRC_DIR := ./src
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
 EXECUTABLE := app.out
